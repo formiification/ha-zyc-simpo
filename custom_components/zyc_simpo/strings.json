@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ZYC Simpo 5000",
+        "description": "Enter the IP address of the ZYC WiFi dongle on your local network.",
+        "data": {
+          "host": "IP address"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the dongle or no battery modules responded."
+    },
+    "abort": {
+      "already_configured": "This ZYC storage is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ZYC Simpo options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "voltage": { "name": "Voltage" },
+      "current": { "name": "Current" },
+      "power": { "name": "Power" },
+      "temperature": { "name": "Temperature" },
+      "soc": { "name": "State of charge" },
+      "soh": { "name": "State of health" },
+      "cell_delta": { "name": "Cell imbalance" },
+      "cell_max": { "name": "Cell voltage max" },
+      "cell_min": { "name": "Cell voltage min" },
+      "cell_delta_bank": { "name": "Cell imbalance (worst)" },
+      "remaining_ah": { "name": "Remaining capacity" },
+      "full_ah": { "name": "Full capacity" },
+      "charge_voltage_limit": { "name": "Charge voltage limit" },
+      "charge_current_limit": { "name": "Charge current limit" },
+      "discharge_voltage_limit": { "name": "Discharge voltage limit" },
+      "discharge_current_limit": { "name": "Discharge current limit" },
+      "voltage_avg": { "name": "Voltage (average)" },
+      "current_total": { "name": "Current (total)" },
+      "power_total": { "name": "Power (total)" },
+      "temperature_avg": { "name": "Temperature (average)" },
+      "soc_avg": { "name": "State of charge" },
+      "soh_avg": { "name": "State of health (average)" },
+      "soh_min": { "name": "State of health (minimum)" },
+      "remaining_ah_total": { "name": "Remaining capacity (total)" },
+      "full_ah_total": { "name": "Full capacity (total)" },
+      "energy_charged": { "name": "Energy charged" },
+      "energy_discharged": { "name": "Energy discharged" },
+      "firmware": { "name": "Firmware" }
+    },
+    "binary_sensor": {
+      "bms_warning": { "name": "BMS warning" },
+      "bms_warning_any": { "name": "BMS warning" }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ZYC Simpo 5000",
+        "description": "Podaj adres IP modułu WiFi ZYC w Twojej sieci lokalnej.",
+        "data": {
+          "host": "Adres IP"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie udało się połączyć z modułem lub żaden moduł baterii nie odpowiedział."
+    },
+    "abort": {
+      "already_configured": "Ten magazyn ZYC jest już skonfigurowany."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje ZYC Simpo",
+        "data": {
+          "scan_interval": "Interwał odświeżania (sekundy)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "voltage": { "name": "Napięcie" },
+      "current": { "name": "Natężenie" },
+      "power": { "name": "Moc" },
+      "temperature": { "name": "Temperatura" },
+      "soc": { "name": "Stan naładowania" },
+      "soh": { "name": "Stan zdrowia" },
+      "cell_delta": { "name": "Rozbalansowanie ogniw" },
+      "cell_max": { "name": "Napięcie ogniwa max" },
+      "cell_min": { "name": "Napięcie ogniwa min" },
+      "cell_delta_bank": { "name": "Rozbalansowanie ogniw (najgorsze)" },
+      "remaining_ah": { "name": "Pozostała pojemność" },
+      "full_ah": { "name": "Pełna pojemność" },
+      "charge_voltage_limit": { "name": "Limit napięcia ładowania" },
+      "charge_current_limit": { "name": "Limit prądu ładowania" },
+      "discharge_voltage_limit": { "name": "Limit napięcia rozładowania" },
+      "discharge_current_limit": { "name": "Limit prądu rozładowania" },
+      "voltage_avg": { "name": "Napięcie (średnia)" },
+      "current_total": { "name": "Natężenie (suma)" },
+      "power_total": { "name": "Moc (suma)" },
+      "temperature_avg": { "name": "Temperatura (średnia)" },
+      "soc_avg": { "name": "Stan naładowania" },
+      "soh_avg": { "name": "Stan zdrowia (średnia)" },
+      "soh_min": { "name": "Stan zdrowia (minimum)" },
+      "remaining_ah_total": { "name": "Pozostała pojemność (suma)" },
+      "full_ah_total": { "name": "Pełna pojemność (suma)" },
+      "energy_charged": { "name": "Energia naładowana" },
+      "energy_discharged": { "name": "Energia oddana" },
+      "firmware": { "name": "Firmware" }
+    },
+    "binary_sensor": {
+      "bms_warning": { "name": "Ostrzeżenie BMS" },
+      "bms_warning_any": { "name": "Ostrzeżenie BMS" }
+    }
+  }
+}
