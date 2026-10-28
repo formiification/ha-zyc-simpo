@@ -1,12 +1,14 @@
 {
   "domain": "zyc_simpo",
   "name": "ZYC Simpo 5000",
-  "codeowners": ["@formiification"],
+  "codeowners": [
+    "@formiification"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/formiification/ha-zyc-simpo",
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/formiification/ha-zyc-simpo/issues",
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
