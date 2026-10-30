@@ -13,6 +13,7 @@ from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    PRUNE_AFTER_MISSED_SCANS,
     REDISCOVER_EVERY,
 )
 from .zyc import ZycClient, ZycError
@@ -50,6 +51,9 @@ class ZycCoordinator(DataUpdateCoordinator[dict]):
         for addr, serial in self.known.items():
             if serial:
                 client.seed_serial(addr, serial)
+        # Consecutive successful re-scans each known module has been missing;
+        # used to prune a module that was physically removed (see _poll).
+        self._absent: dict[int, int] = {}
         # Force a discovery on the first poll of the session (catches a bank
         # that grew while HA was off), then re-scan periodically.
         self._polls_since_scan = REDISCOVER_EVERY
@@ -84,17 +88,31 @@ class ZycCoordinator(DataUpdateCoordinator[dict]):
                 self._polls_since_scan += 1
 
             if discovered:
+                # A successful scan: reconcile the known set with what is there.
                 serials = self.client.serials()
-                added = [a for a in discovered if a not in self.known]
-                if added or not self.known:
-                    for a in discovered:
-                        self.known[a] = serials.get(a) or self.known.get(a)
+                before = set(self.known)
+                # Add any newly seen modules.
+                for a in discovered:
+                    self.known[a] = serials.get(a) or self.known.get(a)
+                # Track sustained absence; prune a module only after it has been
+                # missing from several consecutive successful scans (physically
+                # removed, not just briefly offline). A pruned module that comes
+                # back is simply re-added on a later scan.
+                for a in list(self.known):
+                    if a in discovered:
+                        self._absent.pop(a, None)
+                    else:
+                        self._absent[a] = self._absent.get(a, 0) + 1
+                        if self._absent[a] >= PRUNE_AFTER_MISSED_SCANS:
+                            self.known.pop(a, None)
+                            self._absent.pop(a, None)
+                if set(self.known) != before:
                     self._known_dirty = True
                     _LOGGER.info("ZYC known modules: %s", sorted(self.known))
-                    # A genuinely new module needs its entities created, which
-                    # happens on setup — reload (but not on the very first poll,
-                    # where setup is about to create them anyway).
-                    if added and self.data is not None:
+                    # The entity set changed; entities are (re)created on setup,
+                    # so reload — except on the very first poll, where setup is
+                    # about to create them anyway.
+                    if self.data is not None:
                         self._reload_needed = True
 
             addrs = sorted(self.known) if self.known else (discovered or [])

@@ -18,7 +18,7 @@ import socket
 import struct
 
 DEFAULT_PORT = 8888
-MAX_MODULES = 16  # upper bound when auto-discovering the bank size
+MAX_MODULES = 32  # upper bound when auto-discovering the bank size (gap-stop ends the scan early)
 DISCOVERY_TIMEOUT = 2.0  # per-address probe timeout (absent modules time out)
 DISCOVERY_GAP_LIMIT = 3  # stop after this many consecutive empty addresses
 DISCOVERY_RETRIES = 2  # extra tries for an interior gap (transient miss)

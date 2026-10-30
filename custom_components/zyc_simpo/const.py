@@ -12,8 +12,14 @@ MAX_SCAN_INTERVAL = 3600
 
 # Persisted module set survives restarts (helpers.storage.Store).
 STORAGE_VERSION = 1
-# Re-scan for newly added modules every N polls (merge-only; never drops).
+# Re-scan for added/removed modules every N polls.
 REDISCOVER_EVERY = 20
+# Drop a known module only after this many consecutive successful re-scans
+# find it absent — long enough that a transient/maintenance outage is kept and
+# recovers, but a physically removed module is eventually cleaned up. Reversible:
+# if it comes back it is re-added with its history. At the defaults this is about
+# an hour (REDISCOVER_EVERY * PRUNE_AFTER_MISSED_SCANS * scan interval).
+PRUNE_AFTER_MISSED_SCANS = 3
 
 MANUFACTURER = "ZYC Energy"
 MODEL = "Simpo 5000"

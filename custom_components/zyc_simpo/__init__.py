@@ -32,8 +32,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ZycConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _cleanup_stale_devices(hass, entry, coordinator)
     entry.async_on_unload(entry.add_update_listener(_async_reload_on_update))
     return True
+
+
+def _cleanup_stale_devices(
+    hass: HomeAssistant, entry: ZycConfigEntry, coordinator: ZycCoordinator
+) -> None:
+    """Remove module devices that are no longer in the known set.
+
+    Clears a physically removed (pruned) or user-deleted module cleanly, so no
+    orphaned "no longer provided" entities are left behind. The bank device and
+    every currently known module (even one briefly offline) are kept.
+    """
+    dev_reg = dr.async_get(hass)
+    valid = {(DOMAIN, entry.entry_id)} | {
+        (DOMAIN, serial) for serial in coordinator.known.values() if serial
+    }
+    for device in dr.async_entries_for_config_entry(dev_reg, entry.entry_id):
+        if not device.identifiers & valid:
+            dev_reg.async_remove_device(device.id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ZycConfigEntry) -> bool:
