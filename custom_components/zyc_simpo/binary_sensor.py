@@ -60,9 +60,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up the BMS warning binary sensors."""
     coordinator = entry.runtime_data
+    # One warning sensor per known module (persisted set), so a briefly offline
+    # module keeps its entity instead of being dropped.
     entities: list[BinarySensorEntity] = [
-        ZycModuleProblem(coordinator, entry, addr, module)
-        for addr, module in coordinator.data["modules"].items()
+        ZycModuleProblem(coordinator, entry, addr, {"serial": serial})
+        for addr, serial in sorted(coordinator.known.items())
     ]
     entities.append(ZycBankProblem(coordinator, entry))
     async_add_entities(entities)

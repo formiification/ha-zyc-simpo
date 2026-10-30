@@ -263,7 +263,11 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
 
     entities: list[SensorEntity] = []
-    for addr, module in coordinator.data["modules"].items():
+    # Build entities for every known module (persisted set), not just the ones
+    # responding right now, so a briefly offline module keeps its entities and
+    # recovers instead of being dropped as "no longer provided".
+    for addr, serial in sorted(coordinator.known.items()):
+        module = {"serial": serial}
         for desc in MODULE_SENSORS:
             entities.append(ZycModuleSensor(coordinator, entry, addr, module, desc))
         for cell in range(16):

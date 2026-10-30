@@ -10,6 +10,11 @@ DEFAULT_SCAN_INTERVAL = 60  # seconds
 MIN_SCAN_INTERVAL = 5
 MAX_SCAN_INTERVAL = 3600
 
+# Persisted module set survives restarts (helpers.storage.Store).
+STORAGE_VERSION = 1
+# Re-scan for newly added modules every N polls (merge-only; never drops).
+REDISCOVER_EVERY = 20
+
 MANUFACTURER = "ZYC Energy"
 MODEL = "Simpo 5000"
 

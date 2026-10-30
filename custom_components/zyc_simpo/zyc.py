@@ -21,6 +21,8 @@ DEFAULT_PORT = 8888
 MAX_MODULES = 16  # upper bound when auto-discovering the bank size
 DISCOVERY_TIMEOUT = 2.0  # per-address probe timeout (absent modules time out)
 DISCOVERY_GAP_LIMIT = 3  # stop after this many consecutive empty addresses
+DISCOVERY_RETRIES = 2  # extra tries for an interior gap (transient miss)
+POLL_TIMEOUT = 3.0  # per-read timeout during a poll (bounds stalls on a down module)
 
 
 class ZycError(Exception):
@@ -87,6 +89,14 @@ class ZycClient:
         self._timeout = timeout
         self._serials: dict[int, str] = {}  # addr -> serial, cached (static)
         self._firmware: dict[int, str] = {}  # addr -> firmware, cached (static)
+
+    def serials(self) -> dict[int, str]:
+        """Return the cached addr -> serial map (serial is static per module)."""
+        return dict(self._serials)
+
+    def seed_serial(self, addr: int, serial: str) -> None:
+        """Pre-seed a cached serial (e.g. from persisted storage)."""
+        self._serials[addr] = serial
 
     def _read_frame(self, sock: socket.socket, addr: int, cmd: int, length: int) -> tuple[bytes, bool]:
         req = bytes([0xF2, 0x03, addr, cmd, 0x00, 0x01]) + struct.pack(">H", length)
@@ -187,15 +197,26 @@ class ZycClient:
                     misses += 1
                     if found and misses >= DISCOVERY_GAP_LIMIT:
                         break
+            # Retry interior gaps: a module between two responders that missed
+            # once is almost certainly a transient miss, not an empty slot.
+            if found:
+                for addr in range(1, max(found)):
+                    if addr in found:
+                        continue
+                    for _ in range(DISCOVERY_RETRIES):
+                        if self._read_module(sock, addr) is not None:
+                            found.append(addr)
+                            break
         if not found:
             raise ZycError("no battery modules responded")
-        return found
+        return sorted(found)
 
     def poll(self, addrs: list[int]) -> dict:
         """Read all given modules over one connection and compute aggregates."""
         modules: dict[int, dict] = {}
         pack_soc: float | None = None
         with self._connect() as sock:
+            sock.settimeout(POLL_TIMEOUT)
             for addr in addrs:
                 # Serial is static and cached at discovery, so a normal poll is
                 # one round trip per module; retry once to ride out a transient

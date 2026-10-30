@@ -5,8 +5,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.storage import Store
 
-from .const import DOMAIN
+from .const import DOMAIN, STORAGE_VERSION
 from .coordinator import ZycCoordinator
 from .zyc import ZycClient
 
@@ -19,9 +20,12 @@ ZycConfigEntry = ConfigEntry
 async def async_setup_entry(hass: HomeAssistant, entry: ZycConfigEntry) -> bool:
     """Set up ZYC Simpo from a config entry."""
     client = ZycClient(entry.data[CONF_HOST])
-    coordinator = ZycCoordinator(hass, entry, client)
-    # Re-discovers the modules present right now, so a bank that grew or
-    # shrank since last start comes up correctly.
+    # The set of battery modules is remembered across restarts, so a module
+    # that is briefly offline keeps its entities instead of being orphaned.
+    store: Store = Store(hass, STORAGE_VERSION, f"{DOMAIN}.{entry.entry_id}")
+    stored = await store.async_load() or {}
+    known = {int(addr): serial for addr, serial in stored.items()}
+    coordinator = ZycCoordinator(hass, entry, client, known, store)
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = coordinator
@@ -51,7 +55,8 @@ async def async_remove_config_entry_device(
     """Allow deleting a battery module device only once it is gone.
 
     Lets the user clean up a removed/dead module from the UI, while refusing to
-    delete the whole-bank device or a module that is still reporting.
+    delete the whole-bank device or a module that is still reporting. A deleted
+    module is also forgotten from the persisted set so it is not recreated.
     """
     coordinator: ZycCoordinator = entry.runtime_data
     present = {
@@ -63,5 +68,6 @@ async def async_remove_config_entry_device(
         if ident == entry.entry_id:
             return False  # the aggregate bank device stays
         if ident in present:
-            return False  # module still present
+            return False  # module still reporting — keep it
+        await coordinator.async_forget_module(ident)
     return True
